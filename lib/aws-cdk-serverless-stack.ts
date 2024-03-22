@@ -20,6 +20,7 @@ export class AwsCdkServerlessStack extends Stack {
 
         // S3バケットを作成します。ウェブサイトのファイルを格納するためのストレージです。
         const websiteBucket = new aws_s3.Bucket(this, 'WebsiteBucket', {
+            bucketName: process.env.MY_BUCKET_NAME || 'default-bucket-name',
             // スタックの削除時にS3バケットも削除されるように設定します。
             removalPolicy: RemovalPolicy.DESTROY,
         });
@@ -81,17 +82,7 @@ export class AwsCdkServerlessStack extends Stack {
 
         // S3バケットにウェブサイトのファイルをデプロイします。ここではindex.html, error.html, favicon.icoをデプロイしています。
         new aws_s3_deployment.BucketDeployment(this, 'WebsiteDeploy', {
-            sources: [
-                aws_s3_deployment.Source.data(
-                    '/index.html',
-                    '<html><body><h1>Hello World</h1></body></html>'
-                ),
-                aws_s3_deployment.Source.data(
-                    '/error.html',
-                    '<html><body><h1>Error!!!!!!!!!!!!!</h1></body></html>'
-                ),
-                aws_s3_deployment.Source.data('/favicon.ico', ''),
-            ],
+            sources: [aws_s3_deployment.Source.asset('./src')],
             destinationBucket: websiteBucket,
             distribution: distribution,
             distributionPaths: ['/*'], // CloudFrontのキャッシュを無効にするパスを指定します。
